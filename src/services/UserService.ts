@@ -6,7 +6,11 @@ import PostService from './PostService';
 import bcrypt from 'bcrypt';
 import { Like } from 'typeorm';
 
-const getAll = async (username: string, onlyTaggable: boolean): Promise<User[]> => {
+const getAll = async (
+  username: string,
+  onlyTaggable: boolean,
+  onlyPublic: boolean
+): Promise<User[]> => {
   let whereArgs: any = {
     username: Like(`%${username}%`),
     banned: false,
@@ -16,6 +20,13 @@ const getAll = async (username: string, onlyTaggable: boolean): Promise<User[]> 
     whereArgs = {
       ...whereArgs,
       taggable: true,
+    };
+  }
+
+  if (onlyPublic) {
+    whereArgs = {
+      ...whereArgs,
+      private: false,
     };
   }
 
@@ -92,7 +103,6 @@ const updateRelation = async (
 ) => {
   const toSave: Relation = new Relation({ subject, object, type, pending });
   const savedRelation = await toSave.save();
-  console.log(savedRelation);
 
   await PostService.updateRelation(savedRelation);
 };

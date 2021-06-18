@@ -42,14 +42,10 @@ const acceptRequest = async (req: CustomRequest, res: Response) => {
   res.status(204).end();
 };
 
-const deleteRelation = async (req: CustomRequest, res: Response) => {
-  let subject = await User.findOne(req.user.id);
-  let object = await User.findOne(req.body.id);
+const rejectRequest = async (req: CustomRequest, res: Response) => {
+  let subject = await User.findOne(req.body.id);
+  let object = await User.findOne(req.user.id);
   const type: RelationType = req.body.type;
-
-  if (!object) {
-    throw new HttpException(404, [new PropertyError('base', 'User not found!')]);
-  }
 
   await UserService.deleteRelation(subject, object, type);
 
@@ -60,5 +56,5 @@ export default {
   getAll,
   createRelation,
   acceptRequest,
-  deleteRelation,
+  rejectRequest,
 };

@@ -56,8 +56,9 @@ const approveAgent = async (req: CustomRequest, res: Response) => {
 const getAll = async (req: CustomRequest, res: Response) => {
   const username = req.query.username || '';
   const onlyTaggable = !!req.query.taggable;
+  const onlyPublic = !!req.query.public;
 
-  const users = await UserService.getAll(username as string, onlyTaggable);
+  const users = await UserService.getAll(username as string, onlyTaggable, onlyPublic);
   res.status(200).send(users);
 };
 

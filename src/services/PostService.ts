@@ -30,7 +30,6 @@ const deleteRelation = async (relation: Relation) => {
     object: relation.object_id,
     type: relation.type,
   };
-  console.log(deleteRequest);
   await axios.post(`${BASE}/api/posts/relation/delete`, deleteRequest);
 };
 
