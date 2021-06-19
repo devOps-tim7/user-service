@@ -74,6 +74,18 @@ const get = async (req: CustomRequest, res: Response) => {
   res.status(200).send(user);
 };
 
+const getMyProfile = async (req: CustomRequest, res: Response) => {
+  const id = req.user.id;
+  let user = await User.findOne({ id });
+
+  if (!user) {
+    throw new HttpException(404, [new PropertyError('base', 'User not found!')]);
+  }
+
+  user.password = '';
+  res.status(200).send(user);
+};
+
 const getForAuth = async (req: CustomRequest, res: Response) => {
   const username = req.params.username;
   const user = await User.findOne({ username });
@@ -98,5 +110,6 @@ export default {
   approveAgent,
   getAll,
   get,
+  getMyProfile,
   getForAuth,
 };

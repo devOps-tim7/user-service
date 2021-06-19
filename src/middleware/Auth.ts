@@ -9,6 +9,7 @@ export interface CustomRequest extends Request {
 
 const loggedIn = (req: CustomRequest, _res: Response, next: NextFunction) => {
   let token = req.header('Authorization');
+  console.log('TOKEN: ', token);
   if (!token) {
     throw new AuthException(401, 'Access denied');
   } else {
@@ -18,6 +19,7 @@ const loggedIn = (req: CustomRequest, _res: Response, next: NextFunction) => {
         token = token.slice(7, token.length).trimLeft();
         const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
         req.user = decoded;
+        console.log('DECODED: ', decoded);
         next();
       }
     } catch (err) {

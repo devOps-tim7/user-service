@@ -5,6 +5,8 @@ import AdminService from './AdminService';
 import PostService from './PostService';
 import bcrypt from 'bcrypt';
 import { Like } from 'typeorm';
+import HttpException from '../exceptions/HttpException';
+import PropertyError from '../exceptions/PropertyError';
 
 const getAll = async (
   username: string,
@@ -47,11 +49,15 @@ const create = async (user: User): Promise<User> => {
 };
 
 const update = async (user: User, attributes: any): Promise<User> => {
-  delete attributes.id;
-
   for (const [key, value] of Object.entries(attributes)) {
-    if (key === 'role' || key === 'banned') {
+    if (key === 'role' || key === 'banned' || key === 'id') {
       continue;
+    }
+    if (key === 'username') {
+      const otherUser = await User.findOne({ username: value as string });
+      if (otherUser && otherUser.id !== user.id) {
+        throw new HttpException(404, [new PropertyError('base', 'Username already exists!')]);
+      }
     }
     if (key === 'password') {
       user.password = bcrypt.hashSync(value as string, 10);

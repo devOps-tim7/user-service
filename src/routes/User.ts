@@ -9,6 +9,7 @@ router.get('/ping', UserController.ping);
 router.post('/', UserController.register);
 router.put('/', loggedIn, UserController.update);
 router.get('/', UserController.getAll);
+router.get('/profile', loggedIn, UserController.getMyProfile);
 router.get('/:username', UserController.get);
 router.get('/auth/:username', UserController.getForAuth);
 router.post('/ban/:id', UserController.ban);
