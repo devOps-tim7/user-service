@@ -9,11 +9,38 @@ import Relation from '../models/Relation';
 
 const getAll = async (req: CustomRequest, res: Response) => {
   const subject = await User.findOne(req.user.id);
-  const type: RelationType = isNaN(+req.query.type) ? 1 : +req.query.type;
+  const object = await User.findOne(req.user.id);
+  const type: RelationType = isNaN(+req.query.type) ? null : +req.query.type;
+  const includePending: boolean = req.query.pending !== '';
+  const pending: boolean = req.query.pending === 'true';
+  const toUser: boolean = req.query.toUser === 'true';
+
+  let whereArgs = {
+    subject,
+    object,
+    type,
+    pending,
+  };
+
+  if (toUser) {
+    delete whereArgs.subject;
+  } else {
+    delete whereArgs.object;
+  }
+
+  if (!includePending) {
+    delete whereArgs.pending;
+  }
+
+  if (!type) {
+    delete whereArgs.type;
+  }
+
+  console.log(whereArgs);
 
   const relations = await Relation.find({
-    where: { subject, type, pending: false },
-    relations: ['object'],
+    where: whereArgs,
+    relations: ['subject', 'object'],
   });
   res.status(200).send(relations);
 };
@@ -52,9 +79,24 @@ const rejectRequest = async (req: CustomRequest, res: Response) => {
   res.status(204).end();
 };
 
+const deleteRelation = async (req: CustomRequest, res: Response) => {
+  let subject = await User.findOne(req.user.id);
+  let object = await User.findOne(req.body.id);
+  const type: RelationType = req.body.type;
+
+  await UserService.deleteRelation(subject, object, type);
+
+  if (type === RelationType.Follow && object.private) {
+    await UserService.deleteRelation(object, subject, type);
+  }
+
+  res.status(204).end();
+};
+
 export default {
   getAll,
   createRelation,
   acceptRequest,
   rejectRequest,
+  deleteRelation,
 };
