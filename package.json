@@ -21,6 +21,7 @@
     "mime-types": "^2.1.30",
     "pg": "^8.6.0",
     "pg-connection-string": "^2.5.0",
+    "prom-client": "^13.1.0",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.2.32"
   },
