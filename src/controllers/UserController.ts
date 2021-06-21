@@ -4,8 +4,9 @@ import bcrypt from 'bcrypt';
 import PropertyError from '../exceptions/PropertyError';
 import HttpException from '../exceptions/HttpException';
 import { CustomRequest } from '../middleware/Auth';
-import { Role } from '../helpers/shared';
+import { RelationType, Role } from '../helpers/shared';
 import UserService from '../services/UserService';
+import Relation from '../models/Relation';
 
 const register = async (req: Request, res: Response) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
@@ -55,10 +56,9 @@ const approveAgent = async (req: CustomRequest, res: Response) => {
 
 const getAll = async (req: CustomRequest, res: Response) => {
   const username = req.query.username || '';
-  const onlyTaggable = !!req.query.taggable;
   const onlyPublic = !!req.query.public;
 
-  const users = await UserService.getAll(username as string, onlyTaggable, onlyPublic);
+  const users = await UserService.getAll(username as string, false, onlyPublic);
   res.status(200).send(users);
 };
 
@@ -97,6 +97,50 @@ const getForAuth = async (req: CustomRequest, res: Response) => {
   res.status(200).send(user);
 };
 
+const getForTagging = async (req: CustomRequest, res: Response) => {
+  const userId = req.user.id;
+
+  const followedByUserIds = (
+    await Relation.find({
+      where: { subject_id: userId, type: RelationType.Follow },
+      relations: ['subject', 'object'],
+    })
+  ).map((user) => user.object.id);
+
+  const blockedByUserIds = (
+    await Relation.find({
+      where: { subject_id: userId, type: RelationType.Block },
+    })
+  ).map((relation) => relation.object_id);
+
+  const hasBlockedUserIds = (
+    await Relation.find({
+      where: { object_id: userId, type: RelationType.Block },
+    })
+  ).map((relation) => relation.subject_id);
+
+  const taggable = await User.find({ where: { taggable: true, banned: false } });
+  const filtered = taggable.filter((user) => {
+    if (user.id === userId) {
+      return false;
+    }
+    if ([...blockedByUserIds, ...hasBlockedUserIds].includes(user.id)) {
+      return false;
+    }
+    if (user.private) {
+      if (followedByUserIds.includes(user.id)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  });
+
+  res.status(200).send(filtered);
+};
+
 const ping = async (req: CustomRequest, res: Response) => {
   console.log(req.header('User-Agent'));
   res.status(200).send('pong');
@@ -112,4 +156,5 @@ export default {
   get,
   getMyProfile,
   getForAuth,
+  getForTagging,
 };

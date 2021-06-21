@@ -40,6 +40,7 @@ const createUser = async (user: User) => {
     birthDate: user.birthDate,
     banned: user.banned,
     username: user.username,
+    private: user.private,
   };
   await axios.post(`${BASE}/api/posts/user`, toSend);
 };
@@ -51,6 +52,7 @@ const updateUser = async (user: User) => {
     birthDate: user.birthDate,
     banned: user.banned,
     username: user.username,
+    private: user.private,
   };
   await axios.put(`${BASE}/api/posts/user`, toSend);
 };
