@@ -4,7 +4,7 @@ import User from '../models/User';
 import AdminService from './AdminService';
 import PostService from './PostService';
 import bcrypt from 'bcrypt';
-import { Like } from 'typeorm';
+import { Like, Not } from 'typeorm';
 import HttpException from '../exceptions/HttpException';
 import PropertyError from '../exceptions/PropertyError';
 
@@ -16,6 +16,7 @@ const getAll = async (
   let whereArgs: any = {
     username: Like(`%${username}%`),
     banned: false,
+    role: Not(Role.Admin),
   };
 
   if (onlyTaggable) {

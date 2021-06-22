@@ -8,6 +8,7 @@ const createUser = async (user: User) => {
     id: user.id,
     banned: user.banned,
     fullName: user.fullName,
+    username: user.username,
   };
 
   await axios.post(`${BASE}/api/admin/users`, toSend);
@@ -18,6 +19,7 @@ const updateUser = async (user: User) => {
     id: user.id,
     banned: user.banned,
     fullName: user.fullName,
+    username: user.username,
   };
   await axios.put(`${BASE}/api/admin/users`, toSend);
 };

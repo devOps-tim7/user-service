@@ -36,7 +36,6 @@ const getAll = async (req: CustomRequest, res: Response) => {
     delete whereArgs.type;
   }
 
-  console.log(whereArgs);
 
   const relations = await Relation.find({
     where: whereArgs,
