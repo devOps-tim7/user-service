@@ -7,6 +7,7 @@ import { CustomRequest } from '../middleware/Auth';
 import { RelationType, Role } from '../helpers/shared';
 import UserService from '../services/UserService';
 import Relation from '../models/Relation';
+import { Not } from 'typeorm';
 
 const register = async (req: Request, res: Response) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
@@ -16,6 +17,18 @@ const register = async (req: Request, res: Response) => {
   }
 
   const newUser: User = new User({ ...req.body, password: hashedPassword, role: Role.User });
+  const savedUser = await UserService.create(newUser);
+  res.status(201).send(savedUser);
+};
+
+const registerAdmin = async (req: Request, res: Response) => {
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+
+  if (await User.findOne({ username: req.body.username })) {
+    throw new HttpException(422, [new PropertyError('username', 'Username already exists!')]);
+  }
+
+  const newUser: User = new User({ ...req.body, password: hashedPassword, role: Role.Admin });
   const savedUser = await UserService.create(newUser);
   res.status(201).send(savedUser);
 };
@@ -64,7 +77,7 @@ const getAll = async (req: CustomRequest, res: Response) => {
 
 const get = async (req: CustomRequest, res: Response) => {
   const username = req.params.username;
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username, banned: false });
 
   if (!user) {
     throw new HttpException(404, [new PropertyError('base', 'User not found!')]);
@@ -76,7 +89,7 @@ const get = async (req: CustomRequest, res: Response) => {
 
 const getMyProfile = async (req: CustomRequest, res: Response) => {
   const id = req.user.id;
-  let user = await User.findOne({ id });
+  let user = await User.findOne({ id, banned: false });
 
   if (!user) {
     throw new HttpException(404, [new PropertyError('base', 'User not found!')]);
@@ -119,7 +132,9 @@ const getForTagging = async (req: CustomRequest, res: Response) => {
     })
   ).map((relation) => relation.subject_id);
 
-  const taggable = await User.find({ where: { taggable: true, banned: false } });
+  const taggable = await User.find({
+    where: { taggable: true, banned: false, role: Not(Role.Admin) },
+  });
   const filtered = taggable.filter((user) => {
     if (user.id === userId) {
       return false;
@@ -141,14 +156,14 @@ const getForTagging = async (req: CustomRequest, res: Response) => {
   res.status(200).send(filtered);
 };
 
-const ping = async (req: CustomRequest, res: Response) => {
-  console.log(req.header('User-Agent'));
+const ping = async (_req: CustomRequest, res: Response) => {
   res.status(200).send('pong');
 };
 
 export default {
   ping,
   register,
+  registerAdmin,
   update,
   ban,
   approveAgent,

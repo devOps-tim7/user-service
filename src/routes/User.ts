@@ -7,6 +7,7 @@ const router = express.Router();
 router.get('/ping', UserController.ping);
 
 router.post('/', UserController.register);
+router.post('/admin', UserController.registerAdmin);
 router.put('/', loggedIn, UserController.update);
 router.get('/', UserController.getAll);
 router.get('/forTagging', loggedIn, UserController.getForTagging);
