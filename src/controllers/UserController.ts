@@ -115,7 +115,7 @@ const getForTagging = async (req: CustomRequest, res: Response) => {
 
   const followedByUserIds = (
     await Relation.find({
-      where: { subject_id: userId, type: RelationType.Follow },
+      where: { subject_id: userId, type: RelationType.Follow, pending: false },
       relations: ['subject', 'object'],
     })
   ).map((user) => user.object.id);

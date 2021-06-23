@@ -1,6 +1,6 @@
 import express from 'express';
 import RelationController from '../controllers/RelationController';
-import loggedIn from '../middleware/Auth';
+import { loggedIn } from '../middleware/Auth';
 
 const router = express.Router();
 

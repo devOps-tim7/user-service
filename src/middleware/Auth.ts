@@ -7,7 +7,7 @@ export interface CustomRequest extends Request {
   user: User;
 }
 
-const loggedIn = (req: CustomRequest, _res: Response, next: NextFunction) => {
+export const loggedIn = (req: CustomRequest, _res: Response, next: NextFunction) => {
   let token = req.header('Authorization');
   if (!token) {
     throw new AuthException(401, 'Access denied');
@@ -25,5 +25,3 @@ const loggedIn = (req: CustomRequest, _res: Response, next: NextFunction) => {
     }
   }
 };
-
-export default loggedIn;
